@@ -9,6 +9,8 @@ class CriteriaSeeder extends Seeder
 {
     public function run()
     {
+        // Perbaikan urutan: C2 -> Fasilitas (kamar & bangunan), C3 -> Harga
+        // Seeder ini menggunakan updateOrCreate sehingga aman dijalankan berulang kali.
         $criteria = [
             [
                 'name' => 'Lokasi',
@@ -18,17 +20,19 @@ class CriteriaSeeder extends Seeder
                 'order' => 1
             ],
             [
-                'name' => 'Harga/Biaya Sewa',
-                'code' => 'C2', 
-                'description' => 'Biaya sewa kos per bulan',
-                'type' => 'cost',
+                // sekarang C2 adalah Fasilitas Kamar & Bangunan (sesuai urutan form)
+                'name' => 'Fasilitas Kamar & Bangunan',
+                'code' => 'C2',
+                'description' => 'Fasilitas yang tersedia di kamar dan bangunan',
+                'type' => 'benefit',
                 'order' => 2
             ],
             [
-                'name' => 'Fasilitas Kamar & Bangunan',
+                // sekarang C3 adalah Harga/Biaya Sewa
+                'name' => 'Harga/Biaya Sewa',
                 'code' => 'C3',
-                'description' => 'Fasilitas yang tersedia di kamar dan bangunan',
-                'type' => 'benefit',
+                'description' => 'Biaya sewa kos per bulan',
+                'type' => 'cost',
                 'order' => 3
             ],
             [
@@ -55,7 +59,16 @@ class CriteriaSeeder extends Seeder
         ];
 
         foreach ($criteria as $criterion) {
-            Criteria::create($criterion);
+            // key 'code' dipakai sebagai unique identifier saat update/insert
+            Criteria::updateOrCreate(
+                ['code' => $criterion['code']],
+                [
+                    'name' => $criterion['name'],
+                    'description' => $criterion['description'],
+                    'type' => $criterion['type'],
+                    'order' => $criterion['order'],
+                ]
+            );
         }
     }
 }

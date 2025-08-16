@@ -17,6 +17,7 @@ class CriteriaController extends Controller
     {
         $criteria = Criteria::with('subcriteria')->orderBy('order')->get();
         return view('admin.criteria.index', compact('criteria'));
+        // return response()->json($criteria);
     }
 
     public function create()

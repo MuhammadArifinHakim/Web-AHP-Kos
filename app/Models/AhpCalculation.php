@@ -16,13 +16,17 @@ class AhpCalculation extends Model
         'boarding_house_scores',
         'ranking',
         'consistency_ratio',
-        'weight_method'
+        'weight_method',
+        'alternative_weights',        // <-- baru
+        'alternatives_consistency'    // <-- baru
     ];
 
     protected $casts = [
         'criteria_weights' => 'array',
         'boarding_house_scores' => 'array',
         'ranking' => 'array',
+        'alternative_weights' => 'array',        // <-- baru
+        'alternatives_consistency' => 'array',  // <-- baru
         'consistency_ratio' => 'decimal:4'
     ];
 

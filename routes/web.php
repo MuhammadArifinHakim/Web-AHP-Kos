@@ -43,3 +43,11 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// routes/web.php (temporary)
+Route::get('/debug/ahp/{campusId}', function($campusId){
+    $svc = new \App\Services\AhpService();
+    // gunakan user id yang sesuai (atau auth()->id())
+    return response()->json($svc->runFullAhpForCampus(1, (int)$campusId));
+});
+

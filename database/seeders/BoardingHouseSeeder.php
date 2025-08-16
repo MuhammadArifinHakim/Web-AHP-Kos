@@ -71,7 +71,7 @@ class BoardingHouseSeeder extends Seeder
     private function generateCriteriaValues($criterion)
     {
         switch ($criterion->code) {
-            case 'C3': // Fasilitas Kamar & Bangunan
+            case 'C2': // Fasilitas Kamar & Bangunan
                 return [
                     'kasur' => rand(0, 1),
                     'lemari' => rand(0, 1),

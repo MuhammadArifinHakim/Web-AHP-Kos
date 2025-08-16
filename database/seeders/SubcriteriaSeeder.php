@@ -10,19 +10,19 @@ class SubcriteriaSeeder extends Seeder
     public function run()
     {
         $subcriteria = [
-            // Fasilitas Kamar & Bangunan (C3)
-            ['criteria_id' => 3, 'name' => 'Kasur', 'code' => 'C3_1', 'type' => 'binary', 'order' => 1],
-            ['criteria_id' => 3, 'name' => 'Lemari', 'code' => 'C3_2', 'type' => 'binary', 'order' => 2],
-            ['criteria_id' => 3, 'name' => 'Meja', 'code' => 'C3_3', 'type' => 'binary', 'order' => 3],
-            ['criteria_id' => 3, 'name' => 'Kursi', 'code' => 'C3_4', 'type' => 'binary', 'order' => 4],
-            ['criteria_id' => 3, 'name' => 'Kipas Angin', 'code' => 'C3_5', 'type' => 'binary', 'order' => 5],
-            ['criteria_id' => 3, 'name' => 'AC', 'code' => 'C3_6', 'type' => 'binary', 'order' => 6],
-            ['criteria_id' => 3, 'name' => 'TV', 'code' => 'C3_7', 'type' => 'binary', 'order' => 7],
-            ['criteria_id' => 3, 'name' => 'WIFI', 'code' => 'C3_8', 'type' => 'binary', 'order' => 8],
-            ['criteria_id' => 3, 'name' => 'Kamar Mandi Dalam', 'code' => 'C3_9', 'type' => 'binary', 'order' => 9],
-            ['criteria_id' => 3, 'name' => 'Dapur', 'code' => 'C3_10', 'type' => 'binary', 'order' => 10],
-            ['criteria_id' => 3, 'name' => 'Parkiran', 'code' => 'C3_11', 'type' => 'binary', 'order' => 11],
-            ['criteria_id' => 3, 'name' => 'Termasuk Biaya Listrik', 'code' => 'C3_12', 'type' => 'binary', 'order' => 12],
+            // Fasilitas Kamar & Bangunan (C2)
+            ['criteria_id' => 2, 'name' => 'Kasur', 'code' => 'C2_1', 'type' => 'binary', 'order' => 1],
+            ['criteria_id' => 2, 'name' => 'Lemari', 'code' => 'C2_2', 'type' => 'binary', 'order' => 2],
+            ['criteria_id' => 2, 'name' => 'Meja', 'code' => 'C2_3', 'type' => 'binary', 'order' => 3],
+            ['criteria_id' => 2, 'name' => 'Kursi', 'code' => 'C2_4', 'type' => 'binary', 'order' => 4],
+            ['criteria_id' => 2, 'name' => 'Kipas Angin', 'code' => 'C2_5', 'type' => 'binary', 'order' => 5],
+            ['criteria_id' => 2, 'name' => 'AC', 'code' => 'C2_6', 'type' => 'binary', 'order' => 6],
+            ['criteria_id' => 2, 'name' => 'TV', 'code' => 'C2_7', 'type' => 'binary', 'order' => 7],
+            ['criteria_id' => 2, 'name' => 'WIFI', 'code' => 'C2_8', 'type' => 'binary', 'order' => 8],
+            ['criteria_id' => 2, 'name' => 'Kamar Mandi Dalam', 'code' => 'C2_9', 'type' => 'binary', 'order' => 9],
+            ['criteria_id' => 2, 'name' => 'Dapur', 'code' => 'C2_10', 'type' => 'binary', 'order' => 10],
+            ['criteria_id' => 2, 'name' => 'Parkiran', 'code' => 'C2_11', 'type' => 'binary', 'order' => 11],
+            ['criteria_id' => 2, 'name' => 'Termasuk Biaya Listrik', 'code' => 'C2_12', 'type' => 'binary', 'order' => 12],
 
             // Fasilitas Lingkungan (C4)
             ['criteria_id' => 4, 'name' => 'Warung', 'code' => 'C4_1', 'type' => 'distance', 'order' => 1],

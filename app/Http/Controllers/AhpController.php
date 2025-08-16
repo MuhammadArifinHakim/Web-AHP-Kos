@@ -71,18 +71,53 @@ class AhpController extends Controller
         return $this->calculateAndDisplayResults($campusId, $weights, $consistencyRatio, 'system');
     }
 
+    // private function calculateAndDisplayResults($campusId, $weights, $consistencyRatio, $method, $pairwiseValues = null)
+    // {
+    //     // Calculate boarding house scores
+    //     $results = $this->ahpService->calculateBoardingHouseScores($campusId, $weights);
+        
+    //     $campus = Campus::findOrFail($campusId);
+    //     $criteria = Criteria::orderBy('order')->get();
+
+    //     // Prepare ranking data
+    //     $ranking = [];
+    //     $rank = 1;
+    //     foreach ($results['scores'] as $kosId => $data) {
+    //         $ranking[] = [
+    //             'rank' => $rank++,
+    //             'kos' => $data['kos'],
+    //             'score' => $data['total_score'],
+    //             'criteria_scores' => $data['criteria_scores']
+    //         ];
+    //     }
+
+    //     // Save calculation to database
+    //     $calculation = AhpCalculation::create([
+    //         'user_id' => Auth::id(),
+    //         'campus_id' => $campusId,
+    //         'criteria_weights' => $weights,
+    //         'boarding_house_scores' => $results['criteria_scores'],
+    //         'ranking' => $ranking,
+    //         'consistency_ratio' => $consistencyRatio,
+    //         'weight_method' => $method
+    //     ]);
+
+    //     return view('results', compact('campus', 'criteria', 'ranking', 'weights', 'consistencyRatio', 'method'));
+    // }
     private function calculateAndDisplayResults($campusId, $weights, $consistencyRatio, $method, $pairwiseValues = null)
     {
-        // Calculate boarding house scores
-        $results = $this->ahpService->calculateBoardingHouseScores($campusId, $weights);
-        
+        $userId = Auth::id();
+
+        // gunakan orchestrator penuh (sudah menghitung alt weights & menyimpan ke DB)
+        $result = $this->ahpService->runFullAhpForCampus($userId, $campusId);
+
         $campus = Campus::findOrFail($campusId);
         $criteria = Criteria::orderBy('order')->get();
 
-        // Prepare ranking data
+        // Siapkan ranking untuk ditampilkan
         $ranking = [];
         $rank = 1;
-        foreach ($results['scores'] as $kosId => $data) {
+        foreach ($result['scores'] as $kosId => $data) {
             $ranking[] = [
                 'rank' => $rank++,
                 'kos' => $data['kos'],
@@ -91,19 +126,18 @@ class AhpController extends Controller
             ];
         }
 
-        // Save calculation to database
-        $calculation = AhpCalculation::create([
-            'user_id' => Auth::id(),
-            'campus_id' => $campusId,
-            'criteria_weights' => $weights,
-            'boarding_house_scores' => $results['criteria_scores'],
-            'ranking' => $ranking,
-            'consistency_ratio' => $consistencyRatio,
-            'weight_method' => $method
-        ]);
+        // Tidak perlu lagi create AhpCalculation manual, sudah dilakukan di runFullAhpForCampus()
 
-        return view('results', compact('campus', 'criteria', 'ranking', 'weights', 'consistencyRatio', 'method'));
+        return view('results', [
+            'campus' => $campus,
+            'criteria' => $criteria,
+            'ranking' => $ranking,
+            'weights' => $weights,  // bobot kriteria (untuk ditampilkan di view)
+            'consistencyRatio' => $consistencyRatio,
+            'method' => $method
+        ]);
     }
+
 
     private function generatePairwiseQuestions($criteria)
     {
