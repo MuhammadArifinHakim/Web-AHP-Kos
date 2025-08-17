@@ -28,28 +28,34 @@ class BoardingHouseController extends Controller
     //     return view('admin.boarding-houses.index', compact('boardingHouses'));
     //     // return response()->json($boardingHouses);
     // }
- public function index(Request $request)
-{
-    $query = BoardingHouse::with('campuses', 'criteriaValues');
+    public function index(Request $request)
+    {
+        $query = BoardingHouse::with('campuses', 'criteriaValues');
 
-    if ($request->filled('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('campus_id')) {
+            $query->whereHas('campuses', function($q) use ($request) {
+                $q->where('campus_id', $request->campus_id);
+            });
+        }
+
+        $boardingHouses = $query->get();
+
+        // Definisikan variabel $search agar compact tidak error
+        $search = $request->search;
+        $campus_id = $request->campus_id;
+
+        return view('admin.boarding-houses.index', compact('boardingHouses', 'search', 'campus_id'));
+        // return response()->json([
+        //     'boardingHouses' => $boardingHouses,
+        //     'search' => $search,
+        //     'campus_id' => $campus_id,
+        // ]);
+
     }
-
-    if ($request->filled('campus_id')) {
-        $query->whereHas('campuses', function($q) use ($request) {
-            $q->where('campus_id', $request->campus_id);
-        });
-    }
-
-    $boardingHouses = $query->get();
-
-    // Definisikan variabel $search agar compact tidak error
-    $search = $request->search;
-    $campus_id = $request->campus_id;
-
-    return view('admin.boarding-houses.index', compact('boardingHouses', 'search', 'campus_id'));
-}
 
     
 

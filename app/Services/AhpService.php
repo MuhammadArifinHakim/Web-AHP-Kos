@@ -239,58 +239,6 @@ class AhpService
         ];
     }
 
-
-    // public function calculateBoardingHouseScores($campusId, array $criteriaWeights, $useAlternativeWeights = false, $alternativeWeights = [])
-    // {
-    //     $campus = Campus::find($campusId);
-    //     $boardingHouses = $campus->boardingHouses;
-    //     $criteria = Criteria::orderBy('order')->get();
-        
-    //     $scores = [];
-    //     $criteriaScores = [];
-
-    //     foreach ($boardingHouses as $kos) {
-    //         $totalScore = 0;
-    //         $kosScores = [];
-
-    //         foreach ($criteria as $index => $criterion) {
-    //             if ($useAlternativeWeights && isset($alternativeWeights[$criterion->code][$kos->id])) {
-    //                 // use weight from alternative AHP matrix
-    //                 $score = $alternativeWeights[$criterion->code][$kos->id];
-    //             } else {
-    //                 // fallback: use normalized direct score (existing behavior)
-    //                 $score = $this->calculateCriteriaScore($kos, $criterion, $campusId, $boardingHouses);
-    //             }
-
-    //             $weightedScore = $score * ($criteriaWeights[$index] ?? 0);
-    //             $totalScore += $weightedScore;
-                
-    //             $kosScores[$criterion->code] = [
-    //                 'raw_score' => $score,
-    //                 'weighted_score' => $weightedScore
-    //             ];
-    //         }
-
-    //         $scores[$kos->id] = [
-    //             'total_score' => $totalScore,
-    //             'criteria_scores' => $kosScores,
-    //             'kos' => $kos
-    //         ];
-
-    //         $criteriaScores[$kos->id] = $kosScores;
-    //     }
-
-    //     // Sort by total score descending
-    //     uasort($scores, function ($a, $b) {
-    //         return $b['total_score'] <=> $a['total_score'];
-    //     });
-
-    //     return [
-    //         'scores' => $scores,
-    //         'criteria_scores' => $criteriaScores
-    //     ];
-    // }
-
     private function calculateCriteriaScore(BoardingHouse $kos, Criteria $criterion, $campusId, $allKos)
     {
         switch ($criterion->code) {
@@ -298,10 +246,10 @@ class AhpService
                 $distance = $kos->getDistanceToCampus($campusId);
                 return $this->normalizeDistance($distance, $allKos, $campusId);
 
-            case 'C2': // Fasilitas Kamar & Bangunan  <-- DIUBAH
+            case 'C2': // Fasilitas Kamar & Bangunan  
                 return $this->calculateFacilityScore($kos, $criterion);
 
-            case 'C3': // Harga/Biaya Sewa  <-- DIUBAH
+            case 'C3': // Harga/Biaya Sewa  
                 return $this->normalizePrice($kos->price, $allKos);
 
             case 'C4': // Fasilitas Lingkungan
@@ -631,31 +579,4 @@ class AhpService
             'ranking' => $ranking
         ];
     }
-
-    // public function runFullAhpForCampus($userId, $campusId)
-    // {
-    //     // 1) criteria weights from questionnaire (same order as Criteria::order())
-    //     $criteriaWeights = $this->getSystemRecommendedWeights($campusId);
-
-    //     // 2) compute alternative weights (per criterion)
-    //     $altRes = $this->computeAlternativeWeightsPerCriterion($campusId, $criteriaWeights);
-    //     $alternativeWeights = $altRes['alternative_weights'];
-    //     $alternativesConsistency = $altRes['alternatives_consistency'];
-
-    //     // 3) final scores using alternative weights
-    //     $result = $this->calculateBoardingHouseScores($campusId, $criteriaWeights, true, $alternativeWeights);
-
-    //     // 4) prepare payload and save
-    //     $rankingIds = array_keys($result['scores']);
-    //     $otherFields = [
-    //         'boarding_house_scores' => json_encode($result['scores']),
-    //         'ranking' => json_encode($rankingIds),
-    //         'consistency_ratio' => (count($alternativesConsistency) ? max($alternativesConsistency) : 0),
-    //         'weight_method' => 'ahp_with_alternative_pairwise'
-    //     ];
-
-    //     $this->saveAlternativeWeightsToCalculation($userId, $campusId, $criteriaWeights, $alternativeWeights, $alternativesConsistency, $otherFields);
-
-    //     return $result;
-    // }
 }
