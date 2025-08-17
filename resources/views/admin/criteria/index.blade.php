@@ -10,9 +10,9 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Kelola Kriteria</h1>
             <p class="text-gray-600">Daftar kriteria dan subkriteria untuk evaluasi kos</p>
         </div>
-        <a href="{{ route('admin.criteria.create') }}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+        <!-- <a href="{{ route('admin.criteria.create') }}" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
             Tambah Kriteria
-        </a>
+        </a> -->
     </div>
 
     <!-- Criteria List -->

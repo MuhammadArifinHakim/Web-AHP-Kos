@@ -20,10 +20,10 @@ class CriteriaController extends Controller
         // return response()->json($criteria);
     }
 
-    public function create()
-    {
-        return view('admin.criteria.create');
-    }
+    // public function create()
+    // {
+    //     return view('admin.criteria.create');
+    // }
 
     public function store(Request $request)
     {
