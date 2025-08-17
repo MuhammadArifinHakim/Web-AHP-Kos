@@ -113,6 +113,12 @@ class AhpService
     public function getSystemRecommendedWeights($campusId)
     {
         $responses = QuestionnaireResponse::where('campus_id', $campusId)->get();
+
+        // only takes response that have CR <= 0.1
+        // $responses = QuestionnaireResponse::where('campus_id', $campusId)
+        //      ->where('consistency_ratio', '<=', 0.1)
+        //      ->get();
+
         
         if ($responses->isEmpty()) {
             // Default weights if no data available (sum should be ~1)

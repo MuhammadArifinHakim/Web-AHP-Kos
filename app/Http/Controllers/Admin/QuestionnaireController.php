@@ -58,6 +58,13 @@ class QuestionnaireController extends Controller
         $weights = $this->ahpService->calculateWeights($matrix);
         $consistencyRatio = $this->ahpService->calculateConsistencyRatio($matrix, $weights);
 
+        // Check consistency ratio
+        if ($consistencyRatio > 0.10) {
+            return redirect()->back()
+                           ->withErrors(['consistency' => 'Consistency Ratio (' . round($consistencyRatio, 4) . ') melebihi 0.10. Silakan periksa kembali perbandingan Anda.'])
+                           ->withInput();
+        }
+
         QuestionnaireResponse::create([
             'campus_id' => $request->campus_id,
             'pairwise_values' => $pairwiseValues,
