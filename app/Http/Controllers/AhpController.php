@@ -81,11 +81,21 @@ class AhpController extends Controller
     {
         $userId = Auth::id();
 
-        // gunakan orchestrator penuh (sudah menghitung alt weights & menyimpan ke DB)
-        $result = $this->ahpService->runFullAhpForCampus($userId, $campusId);
+        // Jika manual -> pass bobot yang sudah dihitung user ke orchestrator.
+        // Jika system -> biarkan orchestrator mengambil bobot sistem sendiri (agar tidak mengubah perhitungan sistem).
+        if ($method === 'manual' && is_array($weights)) {
+            $result = $this->ahpService->runFullAhpForCampus($userId, $campusId, $weights);
+        } else {
+            // system: jangan pass $weights, biarkan service memanggil getSystemRecommendedWeights()
+            $result = $this->ahpService->runFullAhpForCampus($userId, $campusId);
+        }
 
         $campus = Campus::findOrFail($campusId);
         $criteria = Criteria::orderBy('order')->get();
+
+        // Pilih bobot yang ditampilkan: jika caller memberikan $weights (manual), pakai itu,
+        // kalau tidak, gunakan bobot yang dihitung service (untuk sistem).
+        $displayWeights = is_array($weights) && !empty($weights) ? $weights : ($result['criteria_weights'] ?? []);
 
         // Siapkan ranking untuk ditampilkan
         $ranking = [];
@@ -99,17 +109,16 @@ class AhpController extends Controller
             ];
         }
 
-        // Tidak perlu lagi create AhpCalculation manual, sudah dilakukan di runFullAhpForCampus()
-
         return view('results', [
             'campus' => $campus,
             'criteria' => $criteria,
             'ranking' => $ranking,
-            'weights' => $weights,  // bobot kriteria (untuk ditampilkan di view)
+            'weights' => $displayWeights,  // bobot yang benar untuk ditampilkan
             'consistencyRatio' => $consistencyRatio,
             'method' => $method
         ]);
     }
+
 
 
     private function generatePairwiseQuestions($criteria)
