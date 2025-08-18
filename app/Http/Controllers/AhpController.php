@@ -64,18 +64,16 @@ class AhpController extends Controller
 
     public function processSystem(Request $request)
     {
-        $request->validate([
-            'campus_id' => 'required|exists:campuses,id'
-        ]);
-
+        $request->validate(['campus_id' => 'required|exists:campuses,id']);
         $campusId = $request->input('campus_id');
-        
-        // Get system recommended weights
-        $weights = $this->ahpService->getSystemRecommendedWeights($campusId);
-        $consistencyRatio = 0; // System weights are assumed consistent
+
+        $res = $this->ahpService->getSystemRecommendedWeightsWithCR($campusId);
+        $weights = $res['weights'];
+        $consistencyRatio = $res['cr'];
 
         return $this->calculateAndDisplayResults($campusId, $weights, $consistencyRatio, 'system');
     }
+
     
     private function calculateAndDisplayResults($campusId, $weights, $consistencyRatio, $method, $pairwiseValues = null)
     {

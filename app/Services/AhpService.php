@@ -109,16 +109,54 @@ class AhpService
         return $matrix;
     }
 
-    // --- getSystemRecommendedWeights: returns array of weights (same as before) ---
+    public function getSystemRecommendedWeightsWithCR($campusId)
+    {
+        // (kopi logika getSystemRecommendedWeights yang sudah kamu punya,
+        //  tapi juga simpan $avgPairwise lalu build matrix dan hitung CR)
+        $responses = QuestionnaireResponse::where('campus_id', $campusId)
+                    ->whereNotNull('consistency_ratio')
+                    ->where('consistency_ratio', '<=', 0.1)
+                    ->get();
+
+        if ($responses->isEmpty()) {
+            return [
+                'weights' => [0.2,0.25,0.15,0.15,0.15,0.1],
+                'cr' => 0.0,
+                'count' => 0
+            ];
+        }
+
+        $avgPairwise = [];
+        $totalResponses = $responses->count();
+
+        for ($i = 0; $i < 15; $i++) {
+            $sum = 0;
+            foreach ($responses as $r) {
+                $raw = $r->pairwise_values ?? [];
+                $vals = is_string($raw) ? json_decode($raw, true) : (is_array($raw) ? $raw : []);
+                $sum += isset($vals[$i]) ? (float)$vals[$i] : 1.0;
+            }
+            $avgPairwise[$i] = $sum / $totalResponses;
+        }
+
+        $matrix = $this->buildPairwiseMatrix($avgPairwise);
+        $weights = $this->calculateWeights($matrix);
+        $cr = $this->calculateConsistencyRatio($matrix, $weights);
+
+        return [
+            'weights' => $weights,
+            'cr' => $cr,
+            'count' => $totalResponses
+        ];
+    }
+
     public function getSystemRecommendedWeights($campusId)
     {
-        $responses = QuestionnaireResponse::where('campus_id', $campusId)->get();
-
-        // only takes response that have CR <= 0.1
-        // $responses = QuestionnaireResponse::where('campus_id', $campusId)
-        //      ->where('consistency_ratio', '<=', 0.1)
-        //      ->get();
-
+        // Ambil hanya responses untuk campus ini yang memiliki consistency_ratio <= 0.1
+        $responses = QuestionnaireResponse::where('campus_id', $campusId)
+                    ->whereNotNull('consistency_ratio')           // pastikan ada nilai CR
+                    ->where('consistency_ratio', '<=', 0.1)       // filter CR <= 0.1
+                    ->get();
         
         if ($responses->isEmpty()) {
             // Default weights if no data available (sum should be ~1)
