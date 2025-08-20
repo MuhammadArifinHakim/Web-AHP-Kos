@@ -116,15 +116,6 @@ class AhpService
                     ->where('consistency_ratio', '<=', 0.1)
                     ->get();
 
-        if ($responses->isEmpty()) {
-            return [
-                'weights' => [0.2,0.25,0.15,0.15,0.15,0.1],
-                'cr' => 0.0,
-                'count' => 0,
-                'respondent_ids' => []
-            ];
-        }
-
         $avgPairwise = [];
         $totalResponses = $responses->count();
 
@@ -162,10 +153,10 @@ class AhpService
                     ->where('consistency_ratio', '<=', 0.1)       // filter CR <= 0.1
                     ->get();
         
-        if ($responses->isEmpty()) {
-            // Default weights if no data available (sum should be ~1)
-            return [0.2, 0.25, 0.15, 0.15, 0.15, 0.1];
-        }
+        // if ($responses->isEmpty()) {
+        //     // Default weights if no data available (sum should be ~1)
+        //     return [0.2, 0.25, 0.15, 0.15, 0.15, 0.1];
+        // }
 
         $avgPairwise = [];
         $totalResponses = $responses->count();
@@ -346,8 +337,8 @@ class AhpService
     private function calculateFacilityScore(BoardingHouse $kos, Criteria $criterion)
     {
         $values = $kos->criteriaValues()
-                      ->where('criteria_id', $criterion->id)
-                      ->first()?->values ?? [];
+                        ->where('criteria_id', $criterion->id)
+                        ->first()?->values ?? [];
         
         if (empty($values)) return 0;
         
@@ -359,8 +350,8 @@ class AhpService
     private function calculateEnvironmentScore(BoardingHouse $kos, Criteria $criterion, $allKos)
     {
         $values = $kos->criteriaValues()
-                      ->where('criteria_id', $criterion->id)
-                      ->first()?->values ?? [];
+                        ->where('criteria_id', $criterion->id)
+                        ->first()?->values ?? [];
         
         if (empty($values)) return 0;
 
@@ -368,8 +359,8 @@ class AhpService
         $allValues = [];
         foreach ($allKos as $k) {
             $kosValues = $k->criteriaValues()
-                           ->where('criteria_id', $criterion->id)
-                           ->first()?->values ?? [];
+                            ->where('criteria_id', $criterion->id)
+                            ->first()?->values ?? [];
             if (!empty($kosValues)) {
                 foreach ($kosValues as $key => $value) {
                     $allValues[$key][] = $value;
@@ -403,25 +394,24 @@ class AhpService
     private function calculateSecurityScore(BoardingHouse $kos, Criteria $criterion)
     {
         $values = $kos->criteriaValues()
-                      ->where('criteria_id', $criterion->id)
-                      ->first()?->values ?? [];
+                        ->where('criteria_id', $criterion->id)
+                        ->first()?->values ?? [];
         
         if (empty($values)) return 0;
         
         $total = array_sum($values);
-        return $total / 3; // 3 security features
+        return $total / 3; 
     }
 
     // Improved calculateRulesScore that handles mapped JSON and fallback raw text/numeric
     private function calculateRulesScore(BoardingHouse $kos, Criteria $criterion)
     {
         $raw = $kos->criteriaValues()
-                   ->where('criteria_id', $criterion->id)
-                   ->first()?->values ?? [];
+                    ->where('criteria_id', $criterion->id)
+                    ->first()?->values ?? [];
 
         if (empty($raw)) return 0;
-
-        // If values is stored as associative (as you showed), use keys
+        
         $jam_malam = $raw['jam_malam'] ?? null;
         $membawa_teman = $raw['membawa_teman'] ?? null;
         $ketentuan_bayar = $raw['ketentuan_bayar'] ?? null;
@@ -579,87 +569,9 @@ class AhpService
         }
     }
 
-    // ========== NEW: Orchestrator ==========
-    // public function runFullAhpForCampus($userId, $campusId)
-    // {
-    //     // 1. Ambil bobot kriteria
-    //     $criteriaWeights = $this->getSystemRecommendedWeights($campusId);
-
-    //     // 2. Hitung bobot alternatif per kriteria (pakai helper yang sudah ada)
-    //     $altRes = $this->computeAlternativeWeightsPerCriterion($campusId, $criteriaWeights);
-    //     $alternativeWeights = $altRes['alternative_weights'];
-    //     $alternativesConsistency = $altRes['alternatives_consistency'];
-
-    //     // 3. Hitung skor total dengan alternative weights
-    //     $results = $this->calculateBoardingHouseScores($campusId, $criteriaWeights, $alternativeWeights);
-
-    //     // 4. Siapkan ranking
-    //     $ranking = [];
-    //     $rank = 1;
-    //     foreach ($results['scores'] as $kosId => $data) {
-    //         $ranking[] = [
-    //             'rank' => $rank++,
-    //             'kos' => $data['kos'],
-    //             'score' => $data['total_score'],
-    //             'criteria_scores' => $data['criteria_scores']
-    //         ];
-    //     }
-
-    //     // 5. Simpan ke DB
-    //     \App\Models\AhpCalculation::create([
-    //         'user_id' => $userId,
-    //         'campus_id' => $campusId,
-    //         'criteria_weights' => $criteriaWeights,
-    //         'boarding_house_scores' => $results['criteria_scores'],
-    //         'ranking' => $ranking,
-    //         'consistency_ratio' => count($alternativesConsistency) ? max($alternativesConsistency) : 0,
-    //         'weight_method' => 'ahp_with_alternative_pairwise',
-    //         'alternative_weights' => $alternativeWeights,
-    //         'alternatives_consistency' => $alternativesConsistency
-    //     ]);
-
-    //     return [
-    //         'criteria_weights' => $criteriaWeights,
-    //         'alternative_weights' => $alternativeWeights,
-    //         'alternatives_consistency' => $alternativesConsistency,
-    //         'scores' => $results['scores'],
-    //         'criteria_scores' => $results['criteria_scores'],
-    //         'ranking' => $ranking
-    //     ];
-    // }
-    public function runFullAhpForCampus($userId, $campusId, array $criteriaWeights = null)
+    public function runFullAhpForCampus($userId, $campusId, $weights)
     {
-        // Jika tidak diberikan bobot -> biarkan service memanggil getSystemRecommendedWeights()
-        // (agar perilaku sistem TETAP sama seperti sebelumnya).
-        if ($criteriaWeights === null) {
-            $criteriaWeights = $this->getSystemRecommendedWeights($campusId);
-        } else {
-            // --- bobot manual diberikan: lakukan validasi & normalisasi minimal ---
-            // Ambil jumlah kriteria (untuk memastikan panjang bobot sesuai)
-            $criteria = Criteria::orderBy('order')->get();
-            $n = $criteria->count() ?: 6; // fallback 6 jika tak ditemukan
-
-            // pastikan numeric indexed array
-            $criteriaWeights = array_values(array_map('floatval', $criteriaWeights));
-
-            // pad atau slice agar ukurannya sama dengan jumlah kriteria
-            if (count($criteriaWeights) < $n) {
-                $criteriaWeights = array_pad($criteriaWeights, $n, 0.0);
-            } elseif (count($criteriaWeights) > $n) {
-                $criteriaWeights = array_slice($criteriaWeights, 0, $n);
-            }
-
-            // normalisasi supaya sum == 1 (agar kontribusi bobot konsisten)
-            $sum = array_sum($criteriaWeights);
-            if ($sum <= 0) {
-                // fallback ke bobot default jika tidak valid
-                $criteriaWeights = [0.2, 0.25, 0.15, 0.15, 0.15, 0.1];
-            } else {
-                foreach ($criteriaWeights as $k => $v) {
-                    $criteriaWeights[$k] = $v / $sum;
-                }
-            }
-        }
+        $criteriaWeights = $weights;
 
         // 2. Hitung bobot alternatif per kriteria (pakai helper yang sudah ada)
         $altRes = $this->computeAlternativeWeightsPerCriterion($campusId, $criteriaWeights);

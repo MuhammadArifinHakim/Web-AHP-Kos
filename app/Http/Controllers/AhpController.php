@@ -55,8 +55,8 @@ class AhpController extends Controller
         // Check consistency ratio
         if ($consistencyRatio > 0.10) {
             return redirect()->back()
-                           ->withErrors(['consistency' => 'Consistency Ratio (' . round($consistencyRatio, 4) . ') melebihi 0.10. Silakan periksa kembali perbandingan Anda.'])
-                           ->withInput();
+                            ->withErrors(['consistency' => 'Consistency Ratio (' . round($consistencyRatio, 4) . ') melebihi 0.10. Silakan periksa kembali perbandingan Anda.'])
+                            ->withInput();
         }
 
         return $this->calculateAndDisplayResults($campusId, $weights, $consistencyRatio, 'manual', $pairwiseValues);
@@ -85,11 +85,7 @@ class AhpController extends Controller
     {
         $userId = Auth::id();
 
-        if ($method === 'manual' && is_array($weights)) {
-            $result = $this->ahpService->runFullAhpForCampus($userId, $campusId, $weights);
-        } else {
-            $result = $this->ahpService->runFullAhpForCampus($userId, $campusId);
-        }
+        $result = $this->ahpService->runFullAhpForCampus($userId, $campusId, $weights);
 
         $campus = Campus::findOrFail($campusId);
         $criteria = Criteria::orderBy('order')->get();
