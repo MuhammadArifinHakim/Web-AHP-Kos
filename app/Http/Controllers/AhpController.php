@@ -71,31 +71,31 @@ class AhpController extends Controller
         $weights = $res['weights'];
         $consistencyRatio = $res['cr'];
 
-        return $this->calculateAndDisplayResults($campusId, $weights, $consistencyRatio, 'system');
+        // buat meta yang akan diteruskan ke view
+        $meta = [
+            'respondent_count' => $res['count'] ?? 0,
+            'respondent_ids' => $res['respondent_ids'] ?? []
+        ];
+
+        return $this->calculateAndDisplayResults($campusId, $weights, $consistencyRatio, 'system', null, $meta);
     }
 
     
-    private function calculateAndDisplayResults($campusId, $weights, $consistencyRatio, $method, $pairwiseValues = null)
+    private function calculateAndDisplayResults($campusId, $weights, $consistencyRatio, $method, $pairwiseValues = null, $meta = [])
     {
         $userId = Auth::id();
 
-        // Jika manual -> pass bobot yang sudah dihitung user ke orchestrator.
-        // Jika system -> biarkan orchestrator mengambil bobot sistem sendiri (agar tidak mengubah perhitungan sistem).
         if ($method === 'manual' && is_array($weights)) {
             $result = $this->ahpService->runFullAhpForCampus($userId, $campusId, $weights);
         } else {
-            // system: jangan pass $weights, biarkan service memanggil getSystemRecommendedWeights()
             $result = $this->ahpService->runFullAhpForCampus($userId, $campusId);
         }
 
         $campus = Campus::findOrFail($campusId);
         $criteria = Criteria::orderBy('order')->get();
 
-        // Pilih bobot yang ditampilkan: jika caller memberikan $weights (manual), pakai itu,
-        // kalau tidak, gunakan bobot yang dihitung service (untuk sistem).
         $displayWeights = is_array($weights) && !empty($weights) ? $weights : ($result['criteria_weights'] ?? []);
 
-        // Siapkan ranking untuk ditampilkan
         $ranking = [];
         $rank = 1;
         foreach ($result['scores'] as $kosId => $data) {
@@ -107,15 +107,23 @@ class AhpController extends Controller
             ];
         }
 
+        // ambil meta yang relevan
+        $respondentCount = $meta['respondent_count'] ?? null;
+        $respondentIds = $meta['respondent_ids'] ?? [];
+
         return view('results', [
             'campus' => $campus,
             'criteria' => $criteria,
             'ranking' => $ranking,
-            'weights' => $displayWeights,  // bobot yang benar untuk ditampilkan
+            'weights' => $displayWeights,
             'consistencyRatio' => $consistencyRatio,
-            'method' => $method
+            'method' => $method,
+            // kirim meta ke view
+            'respondentCount' => $respondentCount,
+            'respondentIds' => $respondentIds
         ]);
     }
+
 
 
 

@@ -111,8 +111,6 @@ class AhpService
 
     public function getSystemRecommendedWeightsWithCR($campusId)
     {
-        // (kopi logika getSystemRecommendedWeights yang sudah kamu punya,
-        //  tapi juga simpan $avgPairwise lalu build matrix dan hitung CR)
         $responses = QuestionnaireResponse::where('campus_id', $campusId)
                     ->whereNotNull('consistency_ratio')
                     ->where('consistency_ratio', '<=', 0.1)
@@ -122,7 +120,8 @@ class AhpService
             return [
                 'weights' => [0.2,0.25,0.15,0.15,0.15,0.1],
                 'cr' => 0.0,
-                'count' => 0
+                'count' => 0,
+                'respondent_ids' => []
             ];
         }
 
@@ -143,12 +142,17 @@ class AhpService
         $weights = $this->calculateWeights($matrix);
         $cr = $this->calculateConsistencyRatio($matrix, $weights);
 
+        // collect respondent ids (untuk keperluan tampilan)
+        $respondentIds = $responses->pluck('id')->toArray();
+
         return [
             'weights' => $weights,
             'cr' => $cr,
-            'count' => $totalResponses
+            'count' => $totalResponses,
+            'respondent_ids' => $respondentIds
         ];
     }
+
 
     public function getSystemRecommendedWeights($campusId)
     {

@@ -7,14 +7,14 @@
     <div class="max-w-md w-full space-y-8">
         <div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Masuk ke Akun Anda
+                Admin Login
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
+            <!-- <p class="mt-2 text-center text-sm text-gray-600">
                 Atau
                 <a href="{{ route('register') }}" class="font-medium text-primary-600 hover:text-primary-500">
                     daftar akun baru
                 </a>
-            </p>
+            </p> -->
         </div>
         
         <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
@@ -55,14 +55,6 @@
                         class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                     Masuk
                 </button>
-            </div>
-            
-            <div class="text-center">
-                <p class="text-sm text-gray-600">
-                    Demo Account: <br>
-                    <code class="bg-gray-100 px-2 py-1 rounded text-xs">admin@example.com / password</code><br>
-                    <code class="bg-gray-100 px-2 py-1 rounded text-xs">student@example.com / password</code>
-                </p>
             </div>
         </form>
     </div>

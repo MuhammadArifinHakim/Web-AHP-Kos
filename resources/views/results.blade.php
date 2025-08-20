@@ -76,10 +76,21 @@
                             {{ $consistencyRatio <= 0.10 ? 'Konsisten' : 'Tidak Konsisten' }}
                         </span>
                     </div>
+                    <!-- <div class="flex justify-between">
+                        <span class="text-gray-700">Jumlah Alternatif:</span>
+                        <span class="font-medium text-gray-900">{{ count($ranking) }} Kos</span>
+                    </div> -->
                     <div class="flex justify-between">
                         <span class="text-gray-700">Jumlah Alternatif:</span>
                         <span class="font-medium text-gray-900">{{ count($ranking) }} Kos</span>
                     </div>
+
+                    @if($method === 'system')
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-gray-700">Jumlah Responden (digunakan):</span>
+                            <span class="font-medium text-gray-900">{{ $respondentCount ?? 0 }} respon</span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
