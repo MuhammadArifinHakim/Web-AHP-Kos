@@ -38,7 +38,7 @@ Route::middleware(['admin'])->prefix('admin')->name('admin.')->group(function ()
 
     Route::resource('criteria', CriteriaController::class);
     Route::resource('boarding-houses', BoardingHouseController::class);
-    Route::resource('questionnaire', QuestionnaireController::class)->except(['show', 'edit', 'update']);
+    Route::resource('questionnaire', QuestionnaireController::class);
 });
 Auth::routes();
 

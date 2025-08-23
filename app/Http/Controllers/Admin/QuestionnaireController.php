@@ -18,7 +18,7 @@ class QuestionnaireController extends Controller
         $this->ahpService = $ahpService;
     }
 
-    public function index()
+    public function create()
     {
         $campuses = Campus::all();
         $questions = [
@@ -39,7 +39,44 @@ class QuestionnaireController extends Controller
             "Keamanan & Privasi vs Peraturan Kos?",
         ];
 
-        return view('admin.questionnaire.index', compact('campuses', 'questions'));
+        return view('admin.questionnaire.create', compact('campuses', 'questions'));
+    }
+
+    public function index(Request $request)
+    {
+        $query = \App\Models\QuestionnaireResponse::with('campus')->latest();
+
+        if ($q = $request->get('q')) {
+            $query->where(function($qq) use ($q) {
+                $qq->where('id', $q)
+                ->orWhere('source', 'like', "%{$q}%");
+            });
+        }
+
+        if ($campusId = $request->get('campus_id')) {
+            $query->where('campus_id', $campusId);
+        }
+
+        if ($source = $request->get('source')) {
+            $query->where('source', $source);
+        }
+
+        // new: filter by CR
+        // cr_filter values: '' | 'consistent' | 'inconsistent'
+        $crFilter = $request->get('cr_filter');
+        if ($crFilter === 'consistent') {
+            // only CR <= 0.10 (and non-null)
+            $query->whereNotNull('consistency_ratio')->where('consistency_ratio', '<=', 0.10);
+        } elseif ($crFilter === 'inconsistent') {
+            // only CR > 0.10 (and non-null)
+            $query->whereNotNull('consistency_ratio')->where('consistency_ratio', '>', 0.10);
+        }
+
+        $responses = $query->paginate(20);
+
+        $campuses = \App\Models\Campus::all();
+
+        return view('admin.questionnaire.index', compact('responses', 'campuses'));
     }
 
     public function store(Request $request)
@@ -61,8 +98,8 @@ class QuestionnaireController extends Controller
         // Check consistency ratio
         if ($consistencyRatio > 0.10) {
             return redirect()->back()
-                           ->withErrors(['consistency' => 'Consistency Ratio (' . round($consistencyRatio, 4) . ') melebihi 0.10. Silakan periksa kembali perbandingan Anda.'])
-                           ->withInput();
+                            ->withErrors(['consistency' => 'Consistency Ratio (' . round($consistencyRatio, 4) . ') melebihi 0.10. Silakan periksa kembali perbandingan Anda.'])
+                            ->withInput();
         }
 
         QuestionnaireResponse::create([
@@ -73,13 +110,20 @@ class QuestionnaireController extends Controller
         ]);
 
         return redirect()->route('admin.questionnaire.index')
-                         ->with('success', 'Data kuesioner berhasil ditambahkan.');
+                            ->with('success', 'Data kuesioner berhasil ditambahkan.');
     }
 
-    public function destroy(QuestionnaireResponse $questionnaireResponse)
+    public function destroy($id)
     {
-        $questionnaireResponse->delete();
-        return redirect()->route('admin.questionnaire.index')
-                         ->with('success', 'Data kuesioner berhasil dihapus.');
+        try {
+            $resp = QuestionnaireResponse::findOrFail($id);
+            $resp->delete(); 
+            return redirect()->route('admin.questionnaire.index')
+                            ->with('success', 'Data kuesioner berhasil dihapus.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete questionnaire response: '.$e->getMessage(), ['id'=>$id]);
+            return redirect()->route('admin.questionnaire.index')
+                            ->withErrors(['delete' => 'Gagal menghapus data: '.$e->getMessage()]);
+        }
     }
 }
